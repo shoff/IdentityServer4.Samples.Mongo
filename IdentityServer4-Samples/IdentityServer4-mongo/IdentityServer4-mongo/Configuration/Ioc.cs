@@ -2,11 +2,13 @@
 {
     using Extension;
     using IdentityServer4;
+    using IdentityServer4.Test;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Options;
     using Microsoft.IdentityModel.Tokens;
+    using Services;
 
     internal static class Ioc
     {
@@ -68,6 +70,15 @@
                 });
 
             return services;
+        }
+
+        public static IIdentityServerBuilder AddUsers(this IIdentityServerBuilder builder)
+        {
+            // builder.Services.AddSingleton(new TestUserStore(users));
+            builder.AddProfileService<CustomProfileService>();
+            builder.AddResourceOwnerValidator<TestUserResourceOwnerPasswordValidator>();
+
+            return builder;
         }
     }
 }

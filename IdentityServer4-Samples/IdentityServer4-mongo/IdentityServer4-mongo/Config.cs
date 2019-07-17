@@ -1,10 +1,9 @@
 ﻿namespace MongoDbIdentityServer
 {
     using System.Collections.Generic;
-    using System.Security.Claims;
     using IdentityServer4;
     using IdentityServer4.Models;
-    using IdentityServer4.Test;
+    using Models;
 
     public class Config
     {
@@ -83,32 +82,32 @@
             };
         }
 
-        public static List<TestUser> GetUsers()
+        public static List<User> GetUsers()
         {
-            return new List<TestUser>
+            return new List<User>
             {
-                new TestUser
+                new User
                 {
                     SubjectId = "1",
                     Username = "alice",
                     Password = "password",
 
-                    Claims = new List<Claim>
+                    Claims = new List<UserClaim>
                     {
-                        new Claim("name", "Alice"),
-                        new Claim("website", "https://alice.com")
+                        new UserClaim("name", "Alice"),
+                        new UserClaim("website", "https://alice.com")
                     }
                 },
-                new TestUser
+                new User
                 {
                     SubjectId = "2",
                     Username = "bob",
                     Password = "password",
 
-                    Claims = new List<Claim>
+                    Claims = new List<UserClaim>
                     {
-                        new Claim("name", "Bob"),
-                        new Claim("website", "https://bob.com")
+                        new UserClaim("name", "Bob"),
+                        new UserClaim("website", "https://bob.com")
                     }
                 }
             };
