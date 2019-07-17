@@ -61,7 +61,7 @@ namespace MongoDbIdentityServer.Account
         }
 
         /// <summary>
-        /// Handle postback from username/password login
+        /// Handle post back from username/password login
         /// </summary>
         [HttpPost]
         [ValidateAntiForgeryToken]

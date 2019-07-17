@@ -15,6 +15,11 @@
             return builder;
         }
 
+        public static IIdentityServerBuilder AddUserConsents(this IIdentityServerBuilder builder)
+        {
+            return builder;
+        }
+
 
         /// <summary>
         /// Configure ClientId / Secrets

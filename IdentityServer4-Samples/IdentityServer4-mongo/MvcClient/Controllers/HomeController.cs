@@ -15,11 +15,12 @@
         private readonly HttpClient httpClient;
 
         public HomeController(
-            HttpClient httpClient,
+            IHttpClientFactory httpClientFactory,
             ILogger<HomeController> logger
         )
         {
-            this.httpClient = Guard.IsNotNull(httpClient, nameof(httpClient));
+            Guard.IsNotNull(httpClientFactory, nameof(httpClientFactory));
+            this.httpClient = httpClientFactory.CreateClient("MyCustomAPI");
         }
 
         public IActionResult Index()
