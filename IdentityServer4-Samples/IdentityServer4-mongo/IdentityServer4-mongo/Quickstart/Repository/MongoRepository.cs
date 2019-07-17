@@ -4,6 +4,7 @@
     using System.Collections.Generic;
     using System.Linq;
     using System.Linq.Expressions;
+    using Configuration;
     using Interface;
     using Microsoft.Extensions.Options;
     using MongoDB.Bson;
@@ -17,7 +18,7 @@
         protected static IMongoClient mongoClient;
         protected static IMongoDatabase mongoDatabase;
 
-        public MongoRepository(IOptions<ConfigurationOptions> optionsAccessor)
+        public MongoRepository(IOptions<MongoDbOptions> optionsAccessor)
         {
             var configurationOptions = optionsAccessor.Value;
 

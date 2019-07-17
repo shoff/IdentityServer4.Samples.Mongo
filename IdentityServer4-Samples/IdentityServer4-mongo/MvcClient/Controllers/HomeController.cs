@@ -2,60 +2,79 @@
 {
     using System.Net.Http;
     using System.Threading.Tasks;
+    using ChaosMonkey.Guards;
     using IdentityModel.Client;
     using Microsoft.AspNetCore.Authentication;
     using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Mvc;
+    using Microsoft.Extensions.Logging;
     using Newtonsoft.Json.Linq;
 
     public class HomeController : Controller
     {
+        private readonly HttpClient httpClient;
+
+        public HomeController(
+            HttpClient httpClient,
+            ILogger<HomeController> logger
+        )
+        {
+            this.httpClient = Guard.IsNotNull(httpClient, nameof(httpClient));
+        }
+
         public IActionResult Index()
         {
-            return View();
+            return this.View();
         }
 
         [Authorize]
         public IActionResult Secure()
         {
-            ViewData["Message"] = "Secure page.";
+            this.ViewData["Message"] = "Secure page.";
 
-            return View();
+            return this.View();
         }
 
         public async Task Logout()
         {
-            await HttpContext.SignOutAsync("Cookies");
-            await HttpContext.SignOutAsync("oidc");
+            await this.HttpContext.SignOutAsync("Cookies");
+            await this.HttpContext.SignOutAsync("oidc");
         }
 
         public IActionResult Error()
         {
-            return View();
+            return this.View();
         }
 
         public async Task<IActionResult> CallApiUsingClientCredentials()
         {
-            var tokenClient = new TokenClient("http://localhost:5000/connect/token", "mvc", "secret");
-            var tokenResponse = await tokenClient.RequestClientCredentialsAsync("api1");
 
-            var client = new HttpClient();
-            client.SetBearerToken(tokenResponse.AccessToken);
-            var content = await client.GetStringAsync("http://localhost:5001/identity");
+            var tokenResponse = await this.httpClient.RequestClientCredentialsTokenAsync(new ClientCredentialsTokenRequest
+            {
+                Address = "http://localhost:5000/connect/token",
+                ClientId = "mvc",
+                ClientSecret = "secret",
+                Scope = "api1"
+            });
 
-            ViewBag.Json = JArray.Parse(content).ToString();
-            return View("json");
+            //var tokenClient = new TokenClient("http://localhost:5000/connect/token", "mvc", "secret");
+            //var tokenResponse = await tokenClient.RequestClientCredentialsAsync("api1");
+            // var client = new HttpClient();
+            this.httpClient.SetBearerToken(tokenResponse.AccessToken);
+            var content = await this.httpClient.GetStringAsync("http://localhost:5001/identity");
+
+            this.ViewBag.Json = JArray.Parse(content).ToString();
+            return this.View("json");
         }
 
         public async Task<IActionResult> CallApiUsingUserAccessToken()
         {
-            var accessToken = await HttpContext.GetTokenAsync("access_token");
-            var client = new HttpClient();
-            client.SetBearerToken(accessToken);
-            var content = await client.GetStringAsync("http://localhost:5001/identity");
+            var accessToken = await this.HttpContext.GetTokenAsync("access_token");
+            this.httpClient.SetBearerToken(accessToken);
+            var content = await this.httpClient.GetStringAsync("http://localhost:5001/identity");
 
-            ViewBag.Json = JArray.Parse(content).ToString();
-            return View("json");
+            this.ViewBag.Json = JArray.Parse(content).ToString();
+            return this.View("json");
         }
     }
 }

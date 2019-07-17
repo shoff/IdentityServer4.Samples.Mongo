@@ -10,7 +10,7 @@
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc();
-
+            services.AddHttpClient();
             JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 
             services.AddAuthentication(options =>
