@@ -2,22 +2,22 @@
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 
-using IdentityServer4.Models;
-using IdentityServer4.Services;
-using IdentityServer4.Stores;
-using Microsoft.Extensions.Logging;
-using System.Linq;
-using System.Threading.Tasks;
-using System;
-
-namespace IdentityServer4.Quickstart.UI
+namespace QuickstartIdentityServer.Quickstart.Consent
 {
+    using System.Linq;
+    using System.Threading.Tasks;
+    using IdentityServer4;
+    using IdentityServer4.Models;
+    using IdentityServer4.Services;
+    using IdentityServer4.Stores;
+    using Microsoft.Extensions.Logging;
+
     public class ConsentService
     {
-        private readonly IClientStore _clientStore;
-        private readonly IResourceStore _resourceStore;
-        private readonly IIdentityServerInteractionService _interaction;
-        private readonly ILogger _logger;
+        private readonly IClientStore clientStore;
+        private readonly IResourceStore resourceStore;
+        private readonly IIdentityServerInteractionService interaction;
+        private readonly ILogger logger;
 
         public ConsentService(
             IIdentityServerInteractionService interaction,
@@ -25,10 +25,10 @@ namespace IdentityServer4.Quickstart.UI
             IResourceStore resourceStore,
             ILogger logger)
         {
-            _interaction = interaction;
-            _clientStore = clientStore;
-            _resourceStore = resourceStore;
-            _logger = logger;
+            this.interaction = interaction;
+            this.clientStore = clientStore;
+            this.resourceStore = resourceStore;
+            this.logger = logger;
         }
 
         public async Task<ProcessConsentResult> ProcessConsent(ConsentInputModel model)
@@ -43,13 +43,13 @@ namespace IdentityServer4.Quickstart.UI
                 grantedConsent = ConsentResponse.Denied;
             }
             // user clicked 'yes' - validate the data
-            else if (model.Button == "yes" && model != null)
+            else if (model.Button == "yes")
             {
                 // if the user consented to some scope, build the response model
                 if (model.ScopesConsented != null && model.ScopesConsented.Any())
                 {
                     var scopes = model.ScopesConsented;
-                    if (ConsentOptions.EnableOfflineAccess == false)
+                    if (ConsentOptions.enableOfflineAccess == false)
                     {
                         scopes = scopes.Where(x => x != IdentityServerConstants.StandardScopes.OfflineAccess);
                     }
@@ -73,11 +73,10 @@ namespace IdentityServer4.Quickstart.UI
             if (grantedConsent != null)
             {
                 // validate return url is still valid
-                var request = await _interaction.GetAuthorizationContextAsync(model.ReturnUrl);
-                if (result == null) return result;
+                var request = await this.interaction.GetAuthorizationContextAsync(model.ReturnUrl);
 
                 // communicate outcome of consent back to identityserver
-                await _interaction.GrantConsentAsync(request, grantedConsent);
+                await this.interaction.GrantConsentAsync(request, grantedConsent);
 
                 // indiate that's it ok to redirect back to authorization endpoint
                 result.RedirectUri = model.ReturnUrl;
@@ -85,7 +84,7 @@ namespace IdentityServer4.Quickstart.UI
             else
             {
                 // we need to redisplay the consent UI
-                result.ViewModel = await BuildViewModelAsync(model.ReturnUrl, model);
+                result.ViewModel = await this.BuildViewModelAsync(model.ReturnUrl, model).ConfigureAwait(false);
             }
 
             return result;
@@ -93,30 +92,28 @@ namespace IdentityServer4.Quickstart.UI
 
         public async Task<ConsentViewModel> BuildViewModelAsync(string returnUrl, ConsentInputModel model = null)
         {
-            var request = await _interaction.GetAuthorizationContextAsync(returnUrl);
+            var request = await this.interaction.GetAuthorizationContextAsync(returnUrl);
             if (request != null)
             {
-                var client = await _clientStore.FindEnabledClientByIdAsync(request.ClientId);
+                var client = await this.clientStore.FindEnabledClientByIdAsync(request.ClientId);
                 if (client != null)
                 {
-                    var resources = await _resourceStore.FindEnabledResourcesByScopeAsync(request.ScopesRequested);
+                    var resources = await this.resourceStore.FindEnabledResourcesByScopeAsync(request.ScopesRequested);
                     if (resources != null && (resources.IdentityResources.Any() || resources.ApiResources.Any()))
                     {
-                        return CreateConsentViewModel(model, returnUrl, request, client, resources);
+                        return this.CreateConsentViewModel(model, returnUrl, client, resources);
                     }
-                    else
-                    {
-                        _logger.LogError("No scopes matching: {0}", request.ScopesRequested.Aggregate((x, y) => x + ", " + y));
-                    }
+
+                    this.logger.LogError("No scopes matching: {0}", request.ScopesRequested.Aggregate((x, y) => x + ", " + y));
                 }
                 else
                 {
-                    _logger.LogError("Invalid client id: {0}", request.ClientId);
+                    this.logger.LogError("Invalid client id: {0}", request.ClientId);
                 }
             }
             else
             {
-                _logger.LogError("No consent request matching request: {0}", returnUrl);
+                this.logger.LogError("No consent request matching request: {0}", returnUrl);
             }
 
             return null;
@@ -124,26 +121,27 @@ namespace IdentityServer4.Quickstart.UI
 
         private ConsentViewModel CreateConsentViewModel(
             ConsentInputModel model, string returnUrl, 
-            AuthorizationRequest request, 
             Client client, Resources resources)
         {
-            var vm = new ConsentViewModel();
-            vm.RememberConsent = model?.RememberConsent ?? true;
-            vm.ScopesConsented = model?.ScopesConsented ?? Enumerable.Empty<string>();
-
-            vm.ReturnUrl = returnUrl;
-
-            vm.ClientName = client.ClientName;
-            vm.ClientUrl = client.ClientUri;
-            vm.ClientLogoUrl = client.LogoUri;
-            vm.AllowRememberConsent = client.AllowRememberConsent;
-
-            vm.IdentityScopes = resources.IdentityResources.Select(x => CreateScopeViewModel(x, vm.ScopesConsented.Contains(x.Name) || model == null)).ToArray();
-            vm.ResourceScopes = resources.ApiResources.SelectMany(x => x.Scopes).Select(x => CreateScopeViewModel(x, vm.ScopesConsented.Contains(x.Name) || model == null)).ToArray();
-            if (ConsentOptions.EnableOfflineAccess && resources.OfflineAccess)
+            var vm = new ConsentViewModel
             {
-                vm.ResourceScopes = vm.ResourceScopes.Union(new ScopeViewModel[] {
-                    GetOfflineAccessScope(vm.ScopesConsented.Contains(IdentityServerConstants.StandardScopes.OfflineAccess) || model == null)
+                RememberConsent = model?.RememberConsent ?? true,
+                ScopesConsented = model?.ScopesConsented ?? Enumerable.Empty<string>(),
+                ReturnUrl = returnUrl,
+                ClientName = client.ClientName,
+                ClientUrl = client.ClientUri,
+                ClientLogoUrl = client.LogoUri,
+                AllowRememberConsent = client.AllowRememberConsent
+            };
+
+
+
+            vm.IdentityScopes = resources.IdentityResources.Select(x => this.CreateScopeViewModel(x, vm.ScopesConsented.Contains(x.Name) || model == null)).ToArray();
+            vm.ResourceScopes = resources.ApiResources.SelectMany(x => x.Scopes).Select(x => this.CreateScopeViewModel(x, vm.ScopesConsented.Contains(x.Name) || model == null)).ToArray();
+            if (ConsentOptions.enableOfflineAccess && resources.OfflineAccess)
+            {
+                vm.ResourceScopes = vm.ResourceScopes.Union(new[] {
+                   this.GetOfflineAccessScope(vm.ScopesConsented.Contains(IdentityServerConstants.StandardScopes.OfflineAccess) || model == null)
                 });
             }
 
@@ -181,8 +179,8 @@ namespace IdentityServer4.Quickstart.UI
             return new ScopeViewModel
             {
                 Name = IdentityServerConstants.StandardScopes.OfflineAccess,
-                DisplayName = ConsentOptions.OfflineAccessDisplayName,
-                Description = ConsentOptions.OfflineAccessDescription,
+                DisplayName = ConsentOptions.offlineAccessDisplayName,
+                Description = ConsentOptions.offlineAccessDescription,
                 Emphasize = true,
                 Checked = check
             };

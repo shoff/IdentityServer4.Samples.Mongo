@@ -10,47 +10,50 @@ namespace QuickstartIdentityServer.Quickstart.Store
 {
     public class CustomResourceStore : IResourceStore
     {
-        protected IRepository _dbRepository;
+        protected IRepository repository;
 
         public CustomResourceStore(IRepository repository)
         {
-            _dbRepository = repository;
+            this.repository = repository;
         }
 
         private IEnumerable<ApiResource> GetAllApiResources()
         {
-            return _dbRepository.All<ApiResource>();
+            return this.repository.All<ApiResource>();
         }
 
         private IEnumerable<IdentityResource> GetAllIdentityResources()
         {
-            return _dbRepository.All<IdentityResource>();
+            return this.repository.All<IdentityResource>();
         }
 
         public Task<ApiResource> FindApiResourceAsync(string name)
         {
-            if (string.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
+            if (string.IsNullOrEmpty(name))
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
 
-            return Task.FromResult(_dbRepository.Single<ApiResource>(a => a.Name == name));
+            return Task.FromResult(this.repository.Single<ApiResource>(a => a.Name == name));
         }
 
         public Task<IEnumerable<ApiResource>> FindApiResourcesByScopeAsync(IEnumerable<string> scopeNames)
         {
-            var list = _dbRepository.Where<ApiResource>(a => a.Scopes.Any(s => scopeNames.Contains(s.Name)));
+            var list = this.repository.Where<ApiResource>(a => a.Scopes.Any(s => scopeNames.Contains(s.Name)));
 
             return Task.FromResult(list.AsEnumerable());
         }
 
         public Task<IEnumerable<IdentityResource>> FindIdentityResourcesByScopeAsync(IEnumerable<string> scopeNames)
         {
-            var list = _dbRepository.Where<IdentityResource>(e => scopeNames.Contains(e.Name));
+            var list = this.repository.Where<IdentityResource>(e => scopeNames.Contains(e.Name));
 
             return Task.FromResult(list.AsEnumerable());
         }
 
         public Resources GetAllResources()
         {
-            var result = new Resources(GetAllIdentityResources(), GetAllApiResources());
+            var result = new Resources(this.GetAllIdentityResources(), this.GetAllApiResources());
             return result;
         }
 
@@ -61,7 +64,7 @@ namespace QuickstartIdentityServer.Quickstart.Store
 
         public Task<Resources> GetAllResourcesAsync()
         {
-            var result = new Resources(GetAllIdentityResources(), GetAllApiResources());
+            var result = new Resources(this.GetAllIdentityResources(), this.GetAllApiResources());
             return Task.FromResult(result);
         }
     }

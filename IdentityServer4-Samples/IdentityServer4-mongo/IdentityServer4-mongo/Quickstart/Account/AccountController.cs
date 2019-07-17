@@ -2,24 +2,25 @@
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 
-using IdentityModel;
-using IdentityServer4.Services;
-using IdentityServer4.Stores;
-using IdentityServer4.Test;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Claims;
-using System.Security.Principal;
-using System.Threading.Tasks;
-using IdentityServer4.Extensions;
-using IdentityServer4.Events;
-
-namespace IdentityServer4.Quickstart.UI
+namespace QuickstartIdentityServer.Quickstart.Account
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Security.Claims;
+    using System.Security.Principal;
+    using System.Threading.Tasks;
+    using IdentityModel;
+    using IdentityServer4;
+    using IdentityServer4.Events;
+    using IdentityServer4.Extensions;
+    using IdentityServer4.Services;
+    using IdentityServer4.Stores;
+    using IdentityServer4.Test;
+    using Microsoft.AspNetCore.Authentication;
+    using Microsoft.AspNetCore.Http;
+    using Microsoft.AspNetCore.Mvc;
+
     /// <summary>
     /// This sample controller implements a typical login/logout/provision workflow for local and external accounts.
     /// The login service encapsulates the interactions with the user data store. This data store is in-memory only and cannot be used for production!
@@ -28,10 +29,10 @@ namespace IdentityServer4.Quickstart.UI
     [SecurityHeaders]
     public class AccountController : Controller
     {
-        private readonly TestUserStore _users;
-        private readonly IIdentityServerInteractionService _interaction;
-        private readonly AccountService _account;
-        private readonly IEventService _events;
+        private readonly TestUserStore users;
+        private readonly IIdentityServerInteractionService interaction;
+        private readonly AccountService account;
+        private readonly IEventService events;
 
 
         public AccountController(
@@ -42,10 +43,10 @@ namespace IdentityServer4.Quickstart.UI
             TestUserStore users = null)
         {
             // if the TestUserStore is not in DI, then we'll just use the global users collection
-            _users = users ?? new TestUserStore(TestUsers.Users);
-            _interaction = interaction;
-            _account = new AccountService(interaction, clientStore, schemeProvider);
-            _events = events;
+            this.users = users ?? new TestUserStore(TestUsers.users);
+            this.interaction = interaction;
+            this.account = new AccountService(interaction, clientStore, schemeProvider);
+            this.events = events;
         }
 
         /// <summary>
@@ -54,15 +55,15 @@ namespace IdentityServer4.Quickstart.UI
         [HttpGet]
         public async Task<IActionResult> Login(string returnUrl)
         {
-            var vm = await _account.BuildLoginViewModelAsync(returnUrl);
+            var vm = await this.account.BuildLoginViewModelAsync(returnUrl);
 
             if (vm.IsExternalLoginOnly)
             {
                 // only one option for logging in
-                return await ExternalLogin(vm.ExternalProviders.First().AuthenticationScheme, returnUrl);
+                return await this.ExternalLogin(vm.ExternalProviders.First().AuthenticationScheme, returnUrl);
             }
 
-            return View(vm);
+            return this.View(vm);
         }
 
         /// <summary>
@@ -72,42 +73,42 @@ namespace IdentityServer4.Quickstart.UI
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(LoginInputModel model)
         {
-            if (ModelState.IsValid)
+            if (this.ModelState.IsValid)
             {
                 // validate username/password against in-memory store
-                if (_users.ValidateCredentials(model.Username, model.Password))
+                if (this.users.ValidateCredentials(model.Username, model.Password))
                 {
                     AuthenticationProperties props = null;
                     // only set explicit expiration here if persistent. 
                     // otherwise we reply upon expiration configured in cookie middleware.
-                    if (AccountOptions.AllowRememberLogin && model.RememberLogin)
+                    if (AccountOptions.allowRememberLogin && model.RememberLogin)
                     {
                         props = new AuthenticationProperties
                         {
                             IsPersistent = true,
-                            ExpiresUtc = DateTimeOffset.UtcNow.Add(AccountOptions.RememberMeLoginDuration)
+                            ExpiresUtc = DateTimeOffset.UtcNow.Add(AccountOptions.rememberMeLoginDuration)
                         };
-                    };
-
-                    // issue authentication cookie with subject ID and username
-                    var user = _users.FindByUsername(model.Username);
-                    // issue authentication cookie with subject ID and username
-                    await HttpContext.SignInAsync(user.SubjectId, user.Username, props);
-                    // make sure the returnUrl is still valid, and if yes - redirect back to authorize endpoint
-                    if (_interaction.IsValidReturnUrl(model.ReturnUrl))
-                    {
-                        return Redirect(model.ReturnUrl);
                     }
 
-                    return Redirect("~/");
+                    // issue authentication cookie with subject ID and username
+                    var user = this.users.FindByUsername(model.Username);
+                    // issue authentication cookie with subject ID and username
+                    await this.HttpContext.SignInAsync(user.SubjectId, user.Username, props);
+                    // make sure the returnUrl is still valid, and if yes - redirect back to authorize endpoint
+                    if (this.interaction.IsValidReturnUrl(model.ReturnUrl))
+                    {
+                        return this.Redirect(model.ReturnUrl);
+                    }
+
+                    return this.Redirect("~/");
                 }
 
-                ModelState.AddModelError("", AccountOptions.InvalidCredentialsErrorMessage);
+                this.ModelState.AddModelError("", AccountOptions.InvalidCredentialsErrorMessage);
             }
 
             // something went wrong, show form with error
-            var vm = await _account.BuildLoginViewModelAsync(model);
-            return View(vm);
+            var vm = await this.account.BuildLoginViewModelAsync(model);
+            return this.View(vm);
         }
 
         /// <summary>
@@ -116,15 +117,15 @@ namespace IdentityServer4.Quickstart.UI
         [HttpGet]
         public async Task<IActionResult> Logout(string logoutId)
         {
-            var vm = await _account.BuildLogoutViewModelAsync(logoutId);
+            var vm = await this.account.BuildLogoutViewModelAsync(logoutId);
 
             if (vm.ShowLogoutPrompt == false)
             {
                 // no need to show prompt
-                return await Logout(vm);
+                return await this.Logout(vm);
             }
 
-            return View(vm);
+            return this.View(vm);
         }
 
         /// <summary>
@@ -135,15 +136,15 @@ namespace IdentityServer4.Quickstart.UI
         public async Task<IActionResult> Logout(LogoutInputModel model)
         {
             // build a model so the logged out page knows what to display
-            var vm = await BuildLoggedOutViewModelAsync(model.LogoutId);
+            var vm = await this.BuildLoggedOutViewModelAsync(model.LogoutId);
 
-            if (User?.Identity.IsAuthenticated == true)
+            if (this.User?.Identity.IsAuthenticated == true)
             {
                 // delete local authentication cookie
-                await HttpContext.SignOutAsync();
+                await this.HttpContext.SignOutAsync();
 
                 // raise the logout event
-                await _events.RaiseAsync(new UserLogoutSuccessEvent(User.GetSubjectId(), User.GetDisplayName()));
+                await this.events.RaiseAsync(new UserLogoutSuccessEvent(this.User.GetSubjectId(), this.User.GetDisplayName()));
             }
 
             // check if we need to trigger sign-out at an upstream identity provider
@@ -152,13 +153,13 @@ namespace IdentityServer4.Quickstart.UI
                 // build a return URL so the upstream provider will redirect back
                 // to us after the user has logged out. this allows us to then
                 // complete our single sign-out processing.
-                string url = Url.Action("Logout", new { logoutId = vm.LogoutId });
+                string url = this.Url.Action("Logout", new { logoutId = vm.LogoutId });
 
                 // this triggers a redirect to the external provider for sign-out
-                return SignOut(new AuthenticationProperties { RedirectUri = url }, vm.ExternalAuthenticationScheme);
+                return this.SignOut(new AuthenticationProperties { RedirectUri = url }, vm.ExternalAuthenticationScheme);
             }
 
-            return View("LoggedOut", vm);
+            return this.View("LoggedOut", vm);
         }
 
         /// <summary>
@@ -167,24 +168,24 @@ namespace IdentityServer4.Quickstart.UI
         [HttpGet]
         public async Task<IActionResult> ExternalLogin(string provider, string returnUrl)
         {
-            returnUrl = Url.Action("ExternalLoginCallback", new { returnUrl = returnUrl });
+            returnUrl = this.Url.Action("ExternalLoginCallback", new { returnUrl });
 
             // windows authentication is modeled as external in the asp.net core authentication manager, so we need special handling
             if (AccountOptions.WindowsAuthenticationSchemes.Contains(provider))
             {
                 // but they don't support the redirect uri, so this URL is re-triggered when we call challenge
-                if (HttpContext.User is WindowsPrincipal)
+                if (this.HttpContext.User is WindowsPrincipal)
                 {
                     var props = new AuthenticationProperties();
-                    props.Items.Add("scheme", HttpContext.User.Identity.AuthenticationType);
+                    props.Items.Add("scheme", this.HttpContext.User.Identity.AuthenticationType);
 
                     var id = new ClaimsIdentity(provider);
-                    id.AddClaim(new Claim(ClaimTypes.NameIdentifier, HttpContext.User.Identity.Name));
-                    id.AddClaim(new Claim(ClaimTypes.Name, HttpContext.User.Identity.Name));
+                    id.AddClaim(new Claim(ClaimTypes.NameIdentifier, this.HttpContext.User.Identity.Name));
+                    id.AddClaim(new Claim(ClaimTypes.Name, this.HttpContext.User.Identity.Name));
 
                   
-                    await HttpContext.SignInAsync(IdentityServerConstants.ExternalCookieAuthenticationScheme, new ClaimsPrincipal(id), props);
-                    return Redirect(returnUrl);
+                    await this.HttpContext.SignInAsync(IdentityServerConstants.ExternalCookieAuthenticationScheme, new ClaimsPrincipal(id), props);
+                    return this.Redirect(returnUrl);
                 }
                 else
                 {
@@ -211,7 +212,7 @@ namespace IdentityServer4.Quickstart.UI
         public async Task<IActionResult> ExternalLoginCallback()
         {
             // read external identity from the temporary cookie
-            var info = await HttpContext.AuthenticateAsync(IdentityServerConstants.ExternalCookieAuthenticationScheme);
+            var info = await this.HttpContext.AuthenticateAsync(IdentityServerConstants.ExternalCookieAuthenticationScheme);
             var tempUser = info?.Principal;
             if (tempUser == null)
             {
@@ -240,13 +241,8 @@ namespace IdentityServer4.Quickstart.UI
             var userId = userIdClaim.Value;
 
             // check if the external user is already provisioned
-            var user = _users.FindByExternalProvider(provider, userId);
-            if (user == null)
-            {
-                // this sample simply auto-provisions new external user
-                // another common approach is to start a registrations workflow first
-                user = _users.AutoProvisionUser(provider, userId, claims);
-            }
+            var user = this.users.FindByExternalProvider(provider, userId) ?? 
+                this.users.AutoProvisionUser(provider, userId, claims);
 
             var additionalClaims = new List<Claim>();
 
@@ -259,20 +255,20 @@ namespace IdentityServer4.Quickstart.UI
 
             // if the external provider issued an id_token, we'll keep it for signout
             AuthenticationProperties props = null;
-            var id_token = info.Properties.GetTokenValue("id_token");
-            if (id_token != null)
+            var idToken = info.Properties.GetTokenValue("id_token");
+            if (idToken != null)
             {
                 props = new AuthenticationProperties();
-                props.StoreTokens(new[] { new AuthenticationToken { Name = "id_token", Value = id_token } });
+                props.StoreTokens(new[] { new AuthenticationToken { Name = "id_token", Value = idToken } });
             }
 
             // issue authentication cookie for user
-            await HttpContext.SignInAsync(user.SubjectId, user.Username,  provider, props, additionalClaims.ToArray());
+            await this.HttpContext.SignInAsync(user.SubjectId, user.Username,  provider, props, additionalClaims.ToArray());
 
             // delete temporary cookie used during external authentication
-            await HttpContext.SignOutAsync(IdentityServerConstants.ExternalCookieAuthenticationScheme);
+            await this.HttpContext.SignOutAsync(IdentityServerConstants.ExternalCookieAuthenticationScheme);
 
-            string returnUrl = string.Empty;
+            string returnUrl;
             
             if (info.Properties.Items.ContainsKey("returnUrl"))
             {
@@ -281,39 +277,44 @@ namespace IdentityServer4.Quickstart.UI
             }
             else
             {
-                //If could not retrive from Properties, get from QueryString
-                returnUrl = Request.Query["returnUrl"];
+                //If could not retrieve from Properties, get from QueryString
+                returnUrl = this.Request.Query["returnUrl"];
             }
           
-            if (_interaction.IsValidReturnUrl(returnUrl))
+            if (this.interaction.IsValidReturnUrl(returnUrl))
             {
-                return Redirect(returnUrl);
+                return this.Redirect(returnUrl);
             }
 
-            return Redirect("~/");
+            return this.Redirect("~/");
         }
 
 
         private async Task<LoggedOutViewModel> BuildLoggedOutViewModelAsync(string logoutId)
         {
             // get context information (client name, post logout redirect URI and iframe for federated signout)
-            var logout = await _interaction.GetLogoutContextAsync(logoutId);
+            var logout = await this.interaction.GetLogoutContextAsync(logoutId);
 
             var vm = new LoggedOutViewModel
             {
-                AutomaticRedirectAfterSignOut = AccountOptions.AutomaticRedirectAfterSignOut,
+                AutomaticRedirectAfterSignOut = AccountOptions.automaticRedirectAfterSignOut,
                 PostLogoutRedirectUri = logout?.PostLogoutRedirectUri,
-                ClientName = string.IsNullOrEmpty(logout?.ClientName) ? logout?.ClientId : logout?.ClientName,
+                ClientName = string.IsNullOrEmpty(logout?.ClientName) ? logout?.ClientId : logout.ClientName,
                 SignOutIframeUrl = logout?.SignOutIFrameUrl,
                 LogoutId = logoutId
             };
 
-            if (User?.Identity.IsAuthenticated == true)
+            if (this.User == null)
             {
-                var idp = User.FindFirst(JwtClaimTypes.IdentityProvider)?.Value;
-                if (idp != null && idp != IdentityServer4.IdentityServerConstants.LocalIdentityProvider)
+                return vm;
+            }
+
+            if (this.User.Identity.IsAuthenticated)
+            {
+                var idp = this.User.FindFirst(JwtClaimTypes.IdentityProvider)?.Value;
+                if (idp != null && idp != IdentityServerConstants.LocalIdentityProvider)
                 {
-                    var providerSupportsSignout = await HttpContext.GetSchemeSupportsSignOutAsync(idp);
+                    var providerSupportsSignout = await this.HttpContext.GetSchemeSupportsSignOutAsync(idp);
                     if (providerSupportsSignout)
                     {
                         if (vm.LogoutId == null)
@@ -321,7 +322,7 @@ namespace IdentityServer4.Quickstart.UI
                             // if there's no current logout context, we need to create one
                             // this captures necessary info from the current logged in user
                             // before we signout and redirect away to the external IdP for signout
-                            vm.LogoutId = await _interaction.CreateLogoutContextAsync();
+                            vm.LogoutId = await this.interaction.CreateLogoutContextAsync();
                         }
 
                         vm.ExternalAuthenticationScheme = idp;

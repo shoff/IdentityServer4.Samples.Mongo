@@ -2,25 +2,25 @@
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 
-using IdentityServer4.Services;
-using Microsoft.AspNetCore.Mvc;
-using System.Threading.Tasks;
-
-namespace IdentityServer4.Quickstart.UI
+namespace QuickstartIdentityServer.Quickstart.Home
 {
+    using System.Threading.Tasks;
+    using IdentityServer4.Services;
+    using Microsoft.AspNetCore.Mvc;
+
     [SecurityHeaders]
     public class HomeController : Controller
     {
-        private readonly IIdentityServerInteractionService _interaction;
+        private readonly IIdentityServerInteractionService interaction;
 
         public HomeController(IIdentityServerInteractionService interaction)
         {
-            _interaction = interaction;
+            this.interaction = interaction;
         }
 
         public IActionResult Index()
         {
-            return View();
+            return this.View();
         }
 
         /// <summary>
@@ -31,13 +31,13 @@ namespace IdentityServer4.Quickstart.UI
             var vm = new ErrorViewModel();
 
             // retrieve error details from identityserver
-            var message = await _interaction.GetErrorContextAsync(errorId);
+            var message = await this.interaction.GetErrorContextAsync(errorId);
             if (message != null)
             {
                 vm.Error = message;
             }
 
-            return View("Error", vm);
+            return this.View("Error", vm);
         }
     }
 }

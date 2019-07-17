@@ -1,14 +1,10 @@
-﻿using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using System.IdentityModel.Tokens.Jwt;
-
-
-namespace MvcClient
+﻿namespace MvcClient
 {
+    using System.IdentityModel.Tokens.Jwt;
+    using Microsoft.AspNetCore.Builder;
+    using Microsoft.AspNetCore.Hosting;
+    using Microsoft.Extensions.DependencyInjection;
+
     public class Startup
     {
         public void ConfigureServices(IServiceCollection services)
@@ -18,10 +14,10 @@ namespace MvcClient
             JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 
             services.AddAuthentication(options =>
-            {
-                options.DefaultScheme = "Cookies";
-                options.DefaultChallengeScheme = "oidc";
-            })
+                {
+                    options.DefaultScheme = "Cookies";
+                    options.DefaultChallengeScheme = "oidc";
+                })
                 .AddCookie("Cookies")
                 .AddOpenIdConnect("oidc", options =>
                 {
@@ -58,8 +54,5 @@ namespace MvcClient
             app.UseStaticFiles();
             app.UseMvcWithDefaultRoute();
         }
-
-
-      
     }
 }

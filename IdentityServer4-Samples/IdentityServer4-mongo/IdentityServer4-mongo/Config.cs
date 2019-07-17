@@ -1,14 +1,11 @@
-﻿// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
-
-using IdentityServer4;
-using IdentityServer4.Models;
-using IdentityServer4.Test;
-using System.Collections.Generic;
-using System.Security.Claims;
-
-namespace QuickstartIdentityServer
+﻿namespace QuickstartIdentityServer
 {
+    using System.Collections.Generic;
+    using System.Security.Claims;
+    using IdentityServer4;
+    using IdentityServer4.Models;
+    using IdentityServer4.Test;
+
     public class Config
     {
         // scopes define the resources in your system
@@ -17,7 +14,7 @@ namespace QuickstartIdentityServer
             return new List<IdentityResource>
             {
                 new IdentityResources.OpenId(),
-                new IdentityResources.Profile(),
+                new IdentityResources.Profile()
             };
         }
 
@@ -44,7 +41,7 @@ namespace QuickstartIdentityServer
                     {
                         new Secret("secret".Sha256())
                     },
-                    AllowedScopes = { "api1" }
+                    AllowedScopes = {"api1"}
                 },
 
                 // resource owner password grant client
@@ -57,7 +54,7 @@ namespace QuickstartIdentityServer
                     {
                         new Secret("secret".Sha256())
                     },
-                    AllowedScopes = { "api1" }
+                    AllowedScopes = {"api1"}
                 },
 
                 // OpenID Connect hybrid flow and client credentials client (MVC)
@@ -67,15 +64,15 @@ namespace QuickstartIdentityServer
                     ClientName = "MVC Client",
                     AllowedGrantTypes = GrantTypes.HybridAndClientCredentials,
 
-                    ClientSecrets = 
+                    ClientSecrets =
                     {
                         new Secret("secret".Sha256())
                     },
 
-                    RedirectUris = { "http://localhost:5002/signin-oidc" },
-                    PostLogoutRedirectUris = { "http://localhost:5002" },
+                    RedirectUris = {"http://localhost:5002/signin-oidc"},
+                    PostLogoutRedirectUris = {"http://localhost:5002"},
 
-                    AllowedScopes = 
+                    AllowedScopes =
                     {
                         IdentityServerConstants.StandardScopes.OpenId,
                         IdentityServerConstants.StandardScopes.Profile,

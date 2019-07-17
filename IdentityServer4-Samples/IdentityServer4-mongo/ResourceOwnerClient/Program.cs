@@ -1,17 +1,17 @@
-﻿// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
-
-using IdentityModel.Client;
-using Newtonsoft.Json.Linq;
-using System;
-using System.Net.Http;
-using System.Threading.Tasks;
-
-namespace ResourceOwnerClient
+﻿namespace ResourceOwnerClient
 {
+    using System;
+    using System.Net.Http;
+    using System.Threading.Tasks;
+    using IdentityModel.Client;
+    using Newtonsoft.Json.Linq;
+
     public class Program
     {
-        public static void Main(string[] args) => MainAsync().GetAwaiter().GetResult();
+        public static void Main(string[] args)
+        {
+            MainAsync().GetAwaiter().GetResult();
+        }
 
         private static async Task MainAsync()
         {
@@ -45,6 +45,7 @@ namespace ResourceOwnerClient
                 var content = response.Content.ReadAsStringAsync().Result;
                 Console.WriteLine(JArray.Parse(content));
             }
+
             Console.WriteLine("Press any key...");
             Console.ReadKey();
         }

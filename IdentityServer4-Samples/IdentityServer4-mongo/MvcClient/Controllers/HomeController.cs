@@ -1,13 +1,13 @@
-﻿using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Authentication;
-using System.Net.Http;
-using Newtonsoft.Json.Linq;
-using IdentityModel.Client;
-
-namespace MvcClient.Controllers
+﻿namespace MvcClient.Controllers
 {
+    using System.Net.Http;
+    using System.Threading.Tasks;
+    using IdentityModel.Client;
+    using Microsoft.AspNetCore.Authentication;
+    using Microsoft.AspNetCore.Authorization;
+    using Microsoft.AspNetCore.Mvc;
+    using Newtonsoft.Json.Linq;
+
     public class HomeController : Controller
     {
         public IActionResult Index()

@@ -1,38 +1,34 @@
-﻿// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
-
-
-using IdentityModel;
-using IdentityServer4.Extensions;
-using IdentityServer4.Services;
-using IdentityServer4.Stores;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using System.Linq;
-using System.Threading.Tasks;
-
-namespace IdentityServer4.Quickstart.UI
+﻿namespace QuickstartIdentityServer.Quickstart.Account
 {
+    using System.Linq;
+    using System.Threading.Tasks;
+    using IdentityModel;
+    using IdentityServer4;
+    using IdentityServer4.Extensions;
+    using IdentityServer4.Services;
+    using IdentityServer4.Stores;
+    using Microsoft.AspNetCore.Authentication;
+    using Microsoft.AspNetCore.Mvc;
+
     public class AccountService : Controller
     {
-        private readonly IClientStore _clientStore;
-        private readonly IIdentityServerInteractionService _interaction;
-        private readonly IAuthenticationSchemeProvider _schemaProvider;
+        private readonly IClientStore clientStore;
+        private readonly IIdentityServerInteractionService interaction;
+        private readonly IAuthenticationSchemeProvider schemaProvider;
 
         public AccountService(
             IIdentityServerInteractionService interaction,
             IClientStore clientStore,
             IAuthenticationSchemeProvider schemeProvider)
         {
-            _interaction = interaction;
-            _clientStore = clientStore;
-            _schemaProvider = schemeProvider;
+            this.interaction = interaction;
+            this.clientStore = clientStore;
+            this.schemaProvider = schemeProvider;
         }
 
         public async Task<LoginViewModel> BuildLoginViewModelAsync(string returnUrl)
         {
-            var context = await _interaction.GetAuthorizationContextAsync(returnUrl);
+            var context = await this.interaction.GetAuthorizationContextAsync(returnUrl);
             if (context?.IdP != null)
             {
                 // this is meant to short circuit the UI and only trigger the one external IdP
@@ -41,21 +37,22 @@ namespace IdentityServer4.Quickstart.UI
                     EnableLocalLogin = false,
                     ReturnUrl = returnUrl,
                     Username = context?.LoginHint,
-                    ExternalProviders = new ExternalProvider[] {new ExternalProvider { AuthenticationScheme = context.IdP } }
+                    ExternalProviders = new[] {new ExternalProvider {AuthenticationScheme = context.IdP}}
                 };
             }
 
-            var schemes = await _schemaProvider.GetAllSchemesAsync();
+            var schemes = await this.schemaProvider.GetAllSchemesAsync();
 
             var providers = schemes
-                .Where(x => x.DisplayName != null && !AccountOptions.WindowsAuthenticationSchemes.Contains(x.DisplayName))
+                .Where(x => x.DisplayName != null &&
+                    !AccountOptions.WindowsAuthenticationSchemes.Contains(x.DisplayName))
                 .Select(x => new ExternalProvider
                 {
                     DisplayName = x.DisplayName,
                     AuthenticationScheme = x.Name
                 }).ToList();
 
-            if (AccountOptions.WindowsAuthenticationEnabled)
+            if (AccountOptions.windowsAuthenticationEnabled)
             {
                 // this is needed to handle windows auth schemes
                 var windowsSchemes = schemes.Where(s => AccountOptions.WindowsAuthenticationSchemes.Contains(s.Name));
@@ -64,7 +61,7 @@ namespace IdentityServer4.Quickstart.UI
                     providers.Add(new ExternalProvider
                     {
                         AuthenticationScheme = AccountOptions.WindowsAuthenticationSchemes.First(),
-                        DisplayName = AccountOptions.WindowsAuthenticationDisplayName
+                        DisplayName = AccountOptions.windowsAuthenticationDisplayName
                     });
                 }
             }
@@ -72,22 +69,23 @@ namespace IdentityServer4.Quickstart.UI
             var allowLocal = true;
             if (context?.ClientId != null)
             {
-                var client = await _clientStore.FindEnabledClientByIdAsync(context.ClientId);
+                var client = await this.clientStore.FindEnabledClientByIdAsync(context.ClientId);
                 if (client != null)
                 {
                     allowLocal = client.EnableLocalLogin;
 
                     if (client.IdentityProviderRestrictions != null && client.IdentityProviderRestrictions.Any())
                     {
-                        providers = providers.Where(provider => client.IdentityProviderRestrictions.Contains(provider.AuthenticationScheme)).ToList();
+                        providers = providers.Where(provider =>
+                            client.IdentityProviderRestrictions.Contains(provider.AuthenticationScheme)).ToList();
                     }
                 }
             }
 
             return new LoginViewModel
             {
-                AllowRememberLogin = AccountOptions.AllowRememberLogin,
-                EnableLocalLogin = allowLocal && AccountOptions.AllowLocalLogin,
+                AllowRememberLogin = AccountOptions.allowRememberLogin,
+                EnableLocalLogin = allowLocal && AccountOptions.allowLocalLogin,
                 ReturnUrl = returnUrl,
                 Username = context?.LoginHint,
                 ExternalProviders = providers.ToArray()
@@ -96,7 +94,7 @@ namespace IdentityServer4.Quickstart.UI
 
         public async Task<LoginViewModel> BuildLoginViewModelAsync(LoginInputModel model)
         {
-            var vm = await BuildLoginViewModelAsync(model.ReturnUrl);
+            var vm = await BuildLoginViewModelAsync(model.ReturnUrl).ConfigureAwait(false);
             vm.Username = model.Username;
             vm.RememberLogin = model.RememberLogin;
             return vm;
@@ -104,7 +102,7 @@ namespace IdentityServer4.Quickstart.UI
 
         public async Task<LogoutViewModel> BuildLogoutViewModelAsync(string logoutId)
         {
-            var vm = new LogoutViewModel { LogoutId = logoutId, ShowLogoutPrompt = AccountOptions.ShowLogoutPrompt };
+            var vm = new LogoutViewModel {LogoutId = logoutId, ShowLogoutPrompt = AccountOptions.showLogoutPrompt};
 
             if (User?.Identity.IsAuthenticated != true)
             {
@@ -113,7 +111,7 @@ namespace IdentityServer4.Quickstart.UI
                 return vm;
             }
 
-            var context = await _interaction.GetLogoutContextAsync(logoutId);
+            var context = await this.interaction.GetLogoutContextAsync(logoutId).ConfigureAwait(false);
             if (context?.ShowSignoutPrompt == false)
             {
                 // it's safe to automatically sign-out
@@ -129,11 +127,11 @@ namespace IdentityServer4.Quickstart.UI
         private async Task<LoggedOutViewModel> BuildLoggedOutViewModelAsync(string logoutId)
         {
             // get context information (client name, post logout redirect URI and iframe for federated signout)
-            var logout = await _interaction.GetLogoutContextAsync(logoutId);
+            var logout = await this.interaction.GetLogoutContextAsync(logoutId).ConfigureAwait(false);
 
             var vm = new LoggedOutViewModel
             {
-                AutomaticRedirectAfterSignOut = AccountOptions.AutomaticRedirectAfterSignOut,
+                AutomaticRedirectAfterSignOut = AccountOptions.automaticRedirectAfterSignOut,
                 PostLogoutRedirectUri = logout?.PostLogoutRedirectUri,
                 ClientName = string.IsNullOrEmpty(logout?.ClientName) ? logout?.ClientId : logout?.ClientName,
                 SignOutIframeUrl = logout?.SignOutIFrameUrl,
@@ -143,9 +141,10 @@ namespace IdentityServer4.Quickstart.UI
             if (User?.Identity.IsAuthenticated == true)
             {
                 var idp = User.FindFirst(JwtClaimTypes.IdentityProvider)?.Value;
-                if (idp != null && idp != IdentityServer4.IdentityServerConstants.LocalIdentityProvider)
+                if (idp != null && idp != IdentityServerConstants.LocalIdentityProvider)
                 {
-                    var providerSupportsSignout = await HttpContext.GetSchemeSupportsSignOutAsync(idp);
+                    var providerSupportsSignout =
+                        await HttpContext.GetSchemeSupportsSignOutAsync(idp).ConfigureAwait(false);
                     if (providerSupportsSignout)
                     {
                         if (vm.LogoutId == null)
@@ -153,7 +152,7 @@ namespace IdentityServer4.Quickstart.UI
                             // if there's no current logout context, we need to create one
                             // this captures necessary info from the current logged in user
                             // before we signout and redirect away to the external IdP for signout
-                            vm.LogoutId = await _interaction.CreateLogoutContextAsync();
+                            vm.LogoutId = await this.interaction.CreateLogoutContextAsync().ConfigureAwait(false);
                         }
 
                         vm.ExternalAuthenticationScheme = idp;

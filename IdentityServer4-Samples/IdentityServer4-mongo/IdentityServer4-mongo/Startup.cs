@@ -1,26 +1,19 @@
-﻿// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
-
-using IdentityServer4;
-using IdentityServer4.Models;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Microsoft.IdentityModel.Tokens;
-using MongoDB.Bson.Serialization;
-using QuickstartIdentityServer.Quickstart.Extension;
-using QuickstartIdentityServer.Quickstart.Interface;
-using System;
-
-namespace QuickstartIdentityServer
+﻿namespace QuickstartIdentityServer
 {
+    using System;
+    using IdentityServer4;
+    using IdentityServer4.Models;
+    using Microsoft.AspNetCore.Builder;
+    using Microsoft.AspNetCore.Hosting;
+    using Microsoft.Extensions.Configuration;
+    using Microsoft.Extensions.DependencyInjection;
+    using Microsoft.IdentityModel.Tokens;
+    using MongoDB.Bson.Serialization;
+    using Quickstart.Extension;
+    using Quickstart.Interface;
+
     public class Startup
     {
-
-        public IConfigurationRoot Configuration { get; }
-
         public Startup(IHostingEnvironment env)
         {
             var environmentVar = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
@@ -28,13 +21,16 @@ namespace QuickstartIdentityServer
             {
                 environmentVar = env.EnvironmentName;
             }
+
             var builder = new ConfigurationBuilder()
                 .SetBasePath(env.ContentRootPath)
-                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-                .AddJsonFile($"appsettings.{environmentVar}.json", optional: true)
+                .AddJsonFile("appsettings.json", true, true)
+                .AddJsonFile($"appsettings.{environmentVar}.json", true)
                 .AddEnvironmentVariables();
             Configuration = builder.Build();
         }
+
+        public IConfigurationRoot Configuration { get; }
 
 
         public void ConfigureServices(IServiceCollection services)
@@ -64,34 +60,31 @@ namespace QuickstartIdentityServer
 
 
             services.AddAuthentication()
-              .AddGoogle("Google", options =>
-              {
-                  options.SignInScheme = IdentityServerConstants.ExternalCookieAuthenticationScheme;
+                .AddGoogle("Google", options =>
+                {
+                    options.SignInScheme = IdentityServerConstants.ExternalCookieAuthenticationScheme;
 
-                  options.ClientId = "434483408261-55tc8n0cs4ff1fe21ea8df2o443v2iuc.apps.googleusercontent.com";
-                  options.ClientSecret = "3gcoTrEDPPJ0ukn_aYYT6PWo";
-              })
-              .AddOpenIdConnect("oidc", "OpenID Connect", options =>
-              {
-                  options.SignInScheme = IdentityServerConstants.ExternalCookieAuthenticationScheme;
-                  options.SignOutScheme = IdentityServerConstants.SignoutScheme;
+                    options.ClientId = "434483408261-55tc8n0cs4ff1fe21ea8df2o443v2iuc.apps.googleusercontent.com";
+                    options.ClientSecret = "3gcoTrEDPPJ0ukn_aYYT6PWo";
+                })
+                .AddOpenIdConnect("oidc", "OpenID Connect", options =>
+                {
+                    options.SignInScheme = IdentityServerConstants.ExternalCookieAuthenticationScheme;
+                    options.SignOutScheme = IdentityServerConstants.SignoutScheme;
 
-                  options.Authority = "https://demo.identityserver.io/";
-                  options.ClientId = "implicit";
+                    options.Authority = "https://demo.identityserver.io/";
+                    options.ClientId = "implicit";
 
-                  options.TokenValidationParameters = new TokenValidationParameters
-                  {
-                      NameClaimType = "name",
-                      RoleClaimType = "role"
-                  };
-              });
-
-         
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        NameClaimType = "name",
+                        RoleClaimType = "role"
+                    };
+                });
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
-
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -112,14 +105,14 @@ namespace QuickstartIdentityServer
 
             // --- The following will do the initial DB population (If needed / first time) ---
             InitializeDatabase(app);
-
         }
 
 
         #region Database
+
         private static void InitializeDatabase(IApplicationBuilder app)
         {
-            bool createdNewRepository = false;
+            var createdNewRepository = false;
             var repository = app.ApplicationServices.GetService<IRepository>();
 
             //  --Client
@@ -127,8 +120,9 @@ namespace QuickstartIdentityServer
             {
                 foreach (var client in Config.GetClients())
                 {
-                    repository.Add<Client>(client);
+                    repository.Add(client);
                 }
+
                 createdNewRepository = true;
             }
 
@@ -137,8 +131,9 @@ namespace QuickstartIdentityServer
             {
                 foreach (var res in Config.GetIdentityResources())
                 {
-                    repository.Add<IdentityResource>(res);
+                    repository.Add(res);
                 }
+
                 createdNewRepository = true;
             }
 
@@ -148,15 +143,17 @@ namespace QuickstartIdentityServer
             {
                 foreach (var api in Config.GetApiResources())
                 {
-                    repository.Add<ApiResource>(api);
+                    repository.Add(api);
                 }
+
                 createdNewRepository = true;
             }
 
             // If it's a new Repository (database), need to restart the website to configure Mongo to ignore Extra Elements.
             if (createdNewRepository)
             {
-                var newRepositoryMsg = $"Mongo Repository created/populated! Please restart you website, so Mongo driver will be configured  to ignore Extra Elements.";
+                var newRepositoryMsg =
+                    "Mongo Repository created/populated! Please restart you website, so Mongo driver will be configured  to ignore Extra Elements.";
                 throw new Exception(newRepositoryMsg);
             }
         }
@@ -187,12 +184,8 @@ namespace QuickstartIdentityServer
                 cm.AutoMap();
                 cm.SetIgnoreExtraElements(true);
             });
-
-
-
         }
 
         #endregion
-
     }
 }

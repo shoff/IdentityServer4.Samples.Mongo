@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-namespace QuickstartIdentityServer
+﻿namespace QuickstartIdentityServer
 {
     /// <summary>
     /// This class is automatically populated by .Net Core Depenceny Injection with "appsettings.json" values

@@ -2,10 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 
-using System.ComponentModel.DataAnnotations;
-
-namespace IdentityServer4.Quickstart.UI
+namespace QuickstartIdentityServer.Quickstart.Account
 {
+    using System.ComponentModel.DataAnnotations;
+
     public class LoginInputModel
     {
         [Required]

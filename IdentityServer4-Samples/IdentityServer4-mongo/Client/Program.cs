@@ -1,18 +1,18 @@
-﻿// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
-
-using IdentityModel.Client;
-using Newtonsoft.Json.Linq;
-using System;
-using System.Net.Http;
-using System.Threading.Tasks;
-
-namespace Client
+﻿namespace Client
 {
+    using System;
+    using System.Net.Http;
+    using System.Threading.Tasks;
+    using IdentityModel.Client;
+    using Newtonsoft.Json.Linq;
+
     public class Program
     {
-        public static void Main(string[] args) => MainAsync().GetAwaiter().GetResult();
-        
+        public static void Main(string[] args)
+        {
+            MainAsync().GetAwaiter().GetResult();
+        }
+
         private static async Task MainAsync()
         {
             // discover endpoints from metadata
@@ -45,6 +45,7 @@ namespace Client
                 var content = await response.Content.ReadAsStringAsync();
                 Console.WriteLine(JArray.Parse(content));
             }
+
             Console.WriteLine("Press any key...");
             Console.ReadKey();
         }
