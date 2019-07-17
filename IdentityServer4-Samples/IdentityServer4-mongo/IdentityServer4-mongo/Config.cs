@@ -1,4 +1,4 @@
-﻿namespace QuickstartIdentityServer
+﻿namespace MongoDbIdentityServer
 {
     using System.Collections.Generic;
     using System.Security.Claims;

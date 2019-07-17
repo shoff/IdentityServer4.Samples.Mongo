@@ -1,5 +1,5 @@
 ﻿// ReSharper disable InconsistentNaming
-namespace QuickstartIdentityServer.Configuration
+namespace MongoDbIdentityServer.Configuration
 {
     public class Constants
     {
@@ -11,5 +11,9 @@ namespace QuickstartIdentityServer.Configuration
         // token
         public const string NAME = "name";
         public const string ROLE = "role";
+
+        // mongo
+        public const string ADMIN = "admin";
+
     }
 }

@@ -1,11 +1,11 @@
-﻿namespace QuickstartIdentityServer.Configuration
+﻿namespace MongoDbIdentityServer.Configuration
 {
     using System;
     using IdentityServer4.Models;
+    using Interface;
     using Microsoft.AspNetCore.Builder;
     using Microsoft.Extensions.DependencyInjection;
     using MongoDB.Bson.Serialization;
-    using Quickstart.Interface;
 
     public static class App
     {
@@ -51,6 +51,7 @@
             // If it's a new Repository (database), need to restart the website to configure Mongo to ignore Extra Elements.
             if (createdNewRepository)
             {
+                // WTF is this bullshit?
                 var newRepositoryMsg =
                     "Mongo Repository created/populated! Please restart you website, so Mongo driver will be configured  to ignore Extra Elements.";
                 throw new Exception(newRepositoryMsg);

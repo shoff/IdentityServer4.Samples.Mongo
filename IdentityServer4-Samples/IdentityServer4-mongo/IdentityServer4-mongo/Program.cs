@@ -1,4 +1,4 @@
-﻿namespace QuickstartIdentityServer
+﻿namespace MongoDbIdentityServer
 {
     using System;
     using System.Linq;
@@ -53,7 +53,6 @@
                 .UseStartup<Startup>()
                 .UseSerilog()
                 .UseKestrel()
-                .UseIISIntegration()
                 .Build();
         }
     }

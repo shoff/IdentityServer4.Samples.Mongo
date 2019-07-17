@@ -1,12 +1,12 @@
-﻿namespace QuickstartIdentityServer.Configuration
+﻿namespace MongoDbIdentityServer.Configuration
 {
+    using Extension;
     using IdentityServer4;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Options;
     using Microsoft.IdentityModel.Tokens;
-    using Quickstart.Extension;
 
     internal static class Ioc
     {
@@ -15,7 +15,7 @@
             services.AddLogging()
                 .AddOptions()
                 .AddHttpClient()
-                .Configure<MongoDbOptions>(configuration.GetSection("MongoDbOptions"))
+                .Configure<MongoOptions>(configuration.GetSection("MongoOptions"))
                 .Configure<GoogleOptions>(configuration.GetSection("GoogleOptions"))
                 .AddCors()
                 .InitializeDependencies()

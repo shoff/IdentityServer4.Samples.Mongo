@@ -1,4 +1,4 @@
-﻿namespace QuickstartIdentityServer.Configuration
+﻿namespace MongoDbIdentityServer.Configuration
 {
     public class GoogleOptions
     {

@@ -1,4 +1,4 @@
-﻿namespace QuickstartIdentityServer
+﻿namespace MongoDbIdentityServer
 {
     using Configuration;
     using Microsoft.AspNetCore.Builder;

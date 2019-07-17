@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.26228.10
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29009.5
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{2408EC7B-2E06-46A5-B6AC-D4E985E30CBB}"
 EndProject
@@ -15,7 +15,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MvcClient", "MvcClient\MvcC
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ResourceOwnerClient", "ResourceOwnerClient\ResourceOwnerClient.csproj", "{74BA920B-C5EB-4A17-94AC-B40AD62FABF0}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QuickstartIdentityServer", "IdentityServer4-mongo\QuickstartIdentityServer.csproj", "{9E44ADE9-A196-4B40-9EFC-19B9E73C8C2A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MongoDbIdentityServer", "IdentityServer4-mongo\MongoDbIdentityServer.csproj", "{9E44ADE9-A196-4B40-9EFC-19B9E73C8C2A}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Api", "Api\Api.csproj", "{B692F626-173F-4B44-A807-78C9E3895A5E}"
 EndProject
