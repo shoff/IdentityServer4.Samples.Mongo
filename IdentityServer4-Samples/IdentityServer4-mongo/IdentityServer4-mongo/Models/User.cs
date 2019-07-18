@@ -1,44 +1,31 @@
 ﻿namespace MongoDbIdentityServer.Models
 {
     using System.Collections.Generic;
+    using System.Security.Claims;
     using MongoDB.Bson.Serialization.Attributes;
 
     [BsonIgnoreExtraElements]
     public class User
     {
-        /// <summary>
-        /// Gets or sets the subject identifier.
-        /// </summary>
+        [BsonElement("subject_id")]
         public string SubjectId { get; set; }
 
-        /// <summary>
-        /// Gets or sets the username.
-        /// </summary>
+        [BsonElement("username")]
         public string Username { get; set; }
 
-        /// <summary>
-        /// Gets or sets the password.
-        /// </summary>
+        [BsonElement("password")]
         public string Password { get; set; }
 
-        /// <summary>
-        /// Gets or sets the provider name.
-        /// </summary>
+        [BsonElement("provider_name")]
         public string ProviderName { get; set; }
 
-        /// <summary>
-        /// Gets or sets the provider subject identifier.
-        /// </summary>
+        [BsonElement("provider_subject_id")]
         public string ProviderSubjectId { get; set; }
 
-        /// <summary>
-        /// Gets or sets if the user is active.
-        /// </summary>
+        [BsonElement("is_active")]
         public bool IsActive { get; set; } = true;
 
-        /// <summary>
-        /// Gets or sets the claims.
-        /// </summary>
+        [BsonElement("claims")]
         public ICollection<UserClaim> Claims { get; set; } = new HashSet<UserClaim>(new UserClaimComparer());
     }
 }

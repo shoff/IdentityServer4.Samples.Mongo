@@ -2,7 +2,6 @@
 {
     using Extension;
     using IdentityServer4;
-    using IdentityServer4.Test;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;

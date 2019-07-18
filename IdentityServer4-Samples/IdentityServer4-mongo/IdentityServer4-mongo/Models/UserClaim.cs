@@ -16,12 +16,15 @@
 
         /// <summary>Gets the claim type of the claim.</summary>
         /// <returns>The claim type.</returns>
+        [BsonElement("type")]
         public string Type { get; set; }
         /// <summary>Gets the value of the claim.</summary>
         /// <returns>The claim value.</returns>
+        [BsonElement("value")]
         public string Value { get; set; }
         /// <summary>Gets the value type of the claim.</summary>
         /// <returns>The claim value type.</returns>
+        [BsonElement("value_type")]
         public string ValueType { get; set; }
 
         public string Issuer { get; set; }

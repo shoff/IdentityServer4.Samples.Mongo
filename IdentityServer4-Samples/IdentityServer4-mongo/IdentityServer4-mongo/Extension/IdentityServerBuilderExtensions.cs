@@ -11,7 +11,8 @@
     {
         public static IIdentityServerBuilder AddMongoRepository(this IIdentityServerBuilder builder)
         {
-            builder.Services.AddTransient<IRepository, MongoRepository>();
+            // https://stackoverflow.com/questions/2194047/net-best-practices-for-mongodb-connections
+            builder.Services.AddSingleton<IRepository, MongoRepository>();
             return builder;
         }
 

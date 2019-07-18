@@ -4,6 +4,7 @@
     using System.Collections.Generic;
     using System.Linq;
     using System.Linq.Expressions;
+    using MongoDB.Driver;
 
     /// <summary>
     /// Basic interface with a few methods for adding, deleting, and querying data.
@@ -17,5 +18,6 @@
         void Add<T>(T item) where T : class, new();
         void Add<T>(IEnumerable<T> items) where T : class, new();
         bool CollectionExists<T>() where T : class, new();
+        IMongoDatabase Database { get; }
     }
 }

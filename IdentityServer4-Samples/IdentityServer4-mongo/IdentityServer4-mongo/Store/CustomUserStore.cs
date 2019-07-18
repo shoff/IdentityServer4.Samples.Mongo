@@ -6,9 +6,11 @@
     using System.Linq;
     using System.Security.Claims;
     using ChaosMonkey.Guards;
+    using Configuration;
     using IdentityModel;
     using Interface;
     using Models;
+    using MongoDB.Driver;
 
     public class CustomUserStore : IMongoDbUserStore
     {
@@ -32,20 +34,25 @@
 
         public User FindByUsername(string username)
         {
-            // return _users.FirstOrDefault(x => x.Username.Equals(username, StringComparison.OrdinalIgnoreCase));
-            var user = this.repository.Single<User>(
-                x => x.Username.Equals(username, StringComparison.OrdinalIgnoreCase));
-
+            //var users = this.repository.Database.GetCollection<User>(Constants.USERS_COLLECTION);
+            //var user = users.Find(u => u.Username == username).FirstOrDefault();
+            var user = this.repository.Where<User>(u => u.Username == username).FirstOrDefault();
             return user;
         }
 
         public User FindByExternalProvider(string provider, string userId)
         {
-            var user =  this.repository.Single<User>(x =>
+            var users = this.repository.Database.GetCollection<User>(Constants.USERS_COLLECTION);
+            var user = users.Find(x =>
                 x.ProviderName == provider &&
-                x.ProviderSubjectId == userId);
-
+                x.ProviderSubjectId == userId).FirstOrDefault();
             return user;
+        }
+
+        public void Update(User user)
+        {
+            var collection = this.repository.Database.GetCollection<User>(Constants.USERS_COLLECTION);
+            collection.ReplaceOne<User>(u => u.Username == user.Username, user);
         }
 
         public User AutoProvisionUser(string provider, string userId, List<Claim> claims)
@@ -111,6 +118,13 @@
             // add user to in-memory store
             this.repository.Add<User>(user);
 
+            return user;
+        }
+
+        public User FindBySubjectId(string subjectId)
+        {
+            Guard.IsNotNullOrWhitespace(subjectId, nameof(subjectId));
+            var user = this.repository.Where<User>(u => u.SubjectId == subjectId).FirstOrDefault();
             return user;
         }
     }

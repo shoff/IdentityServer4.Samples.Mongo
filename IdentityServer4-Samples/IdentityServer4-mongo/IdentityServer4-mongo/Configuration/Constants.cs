@@ -14,6 +14,6 @@ namespace MongoDbIdentityServer.Configuration
 
         // mongo
         public const string ADMIN = "admin";
-
+        public const string USERS_COLLECTION = "user";
     }
 }

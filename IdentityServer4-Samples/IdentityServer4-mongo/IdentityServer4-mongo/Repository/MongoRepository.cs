@@ -66,6 +66,8 @@
             return totalCount > 0;
         }
 
+        public IMongoDatabase Database => this.mongoDatabase;
+
         public void Add<T>(T item) where T : class, new()
         {
             this.mongoDatabase.GetCollection<T>(typeof(T).Name).InsertOne(item);
