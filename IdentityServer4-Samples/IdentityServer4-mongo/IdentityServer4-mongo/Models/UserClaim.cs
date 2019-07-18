@@ -1,7 +1,9 @@
 ﻿namespace MongoDbIdentityServer.Models
 {
     using System.Security.Claims;
+    using MongoDB.Bson.Serialization.Attributes;
 
+    [BsonIgnoreExtraElements]
     public class UserClaim
     {
         public UserClaim() { }

@@ -2,6 +2,7 @@
 {
     using System;
     using System.Linq;
+    using Interface;
     using Microsoft.AspNetCore;
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.Extensions.Configuration;
@@ -30,14 +31,18 @@
                 .ReadFrom.Configuration(serilogConfiguration)
                 .CreateLogger();
 
+            var host = CreateWebHostBuilder(args);
+
             var seed = Array.IndexOf(args, "/seed") > -1; 
             if (seed)
             {
                 args = args.Except(new[] { "/seed" }).ToArray();
-                // TODO seed mongodb
+                IRepository repository = (IRepository) host.Services.GetService(typeof(IRepository));
+                var seeder = new SeedData(repository);
+                seeder.Seed();
             }
 
-            CreateWebHostBuilder(args).Run();
+            host.Run();
         }
 
         public static IWebHost CreateWebHostBuilder(string[] args)

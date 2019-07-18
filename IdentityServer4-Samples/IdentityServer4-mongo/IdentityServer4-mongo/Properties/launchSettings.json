@@ -17,6 +17,7 @@
     },
     "QuickstartIdentityServer": {
       "commandName": "Project",
+      "commandLineArgs": "/seed",
       "launchUrl": "http://localhost:5000",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"

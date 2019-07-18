@@ -8,7 +8,9 @@
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Options;
     using Microsoft.IdentityModel.Tokens;
+    using Models;
     using Services;
+    using Store;
 
     internal static class Ioc
     {
@@ -31,6 +33,7 @@
 
         private static IServiceCollection InitializeDependencies(this IServiceCollection services)
         {
+            services.AddTransient<IMongoDbUserStore, CustomUserStore>();
             return services;
         }
 
@@ -42,7 +45,7 @@
                 .AddClients()
                 .AddIdentityApiResources()
                 .AddPersistedGrants()
-                .AddTestUsers(Config.GetUsers());
+                .AddUsers();
 
             var sp = services.BuildServiceProvider();
             var google = sp.GetRequiredService<IOptions<GoogleOptions>>();
@@ -74,10 +77,9 @@
 
         public static IIdentityServerBuilder AddUsers(this IIdentityServerBuilder builder)
         {
-            // builder.Services.AddSingleton(new TestUserStore(users));
+          
             builder.AddProfileService<CustomProfileService>();
-            builder.AddResourceOwnerValidator<TestUserResourceOwnerPasswordValidator>();
-
+            builder.AddResourceOwnerValidator<UserResourceOwnerPasswordValidator>();
             return builder;
         }
     }

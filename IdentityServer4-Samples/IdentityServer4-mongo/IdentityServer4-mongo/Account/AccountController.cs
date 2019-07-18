@@ -13,39 +13,35 @@ namespace MongoDbIdentityServer.Account
     using IdentityServer4.Extensions;
     using IdentityServer4.Services;
     using IdentityServer4.Stores;
-    using IdentityServer4.Test;
     using Microsoft.AspNetCore.Authentication;
     using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
+    using Store;
 
     [AllowAnonymous]
     [SecurityHeaders]
     public class AccountController : Controller
     {
-        private readonly TestUserStore users;
+        private readonly IMongoDbUserStore userStore;
         private readonly IIdentityServerInteractionService interaction;
         private readonly AccountService account;
         private readonly IEventService events;
-
-
+        
         public AccountController(
             IIdentityServerInteractionService interaction,
             IClientStore clientStore,
             IAuthenticationSchemeProvider schemeProvider,
             IEventService events,
-            TestUserStore users = null)
+            IMongoDbUserStore userStore)
         {
-            // if the TestUserStore is not in DI, then we'll just use the global users collection
-            this.users = users ?? new TestUserStore(TestUsers.users);
+            // if the TestUserStore is not in DI, then we'll just use the global userStore collection
+            this.userStore = userStore;
             this.interaction = interaction;
             this.account = new AccountService(interaction, clientStore, schemeProvider);
             this.events = events;
         }
 
-        /// <summary>
-        /// Show login page
-        /// </summary>
         [HttpGet]
         public async Task<IActionResult> Login(string returnUrl)
         {
@@ -60,9 +56,6 @@ namespace MongoDbIdentityServer.Account
             return this.View(vm);
         }
 
-        /// <summary>
-        /// Handle post back from username/password login
-        /// </summary>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(LoginInputModel model)
@@ -70,7 +63,7 @@ namespace MongoDbIdentityServer.Account
             if (this.ModelState.IsValid)
             {
                 // validate username/password against in-memory store
-                if (this.users.ValidateCredentials(model.Username, model.Password))
+                if (this.userStore.ValidateCredentials(model.Username, model.Password))
                 {
                     AuthenticationProperties props = null;
                     // only set explicit expiration here if persistent. 
@@ -85,7 +78,7 @@ namespace MongoDbIdentityServer.Account
                     }
 
                     // issue authentication cookie with subject ID and username
-                    var user = this.users.FindByUsername(model.Username);
+                    var user = this.userStore.FindByUsername(model.Username);
                     // issue authentication cookie with subject ID and username
                     await this.HttpContext.SignInAsync(user.SubjectId, user.Username, props);
                     // make sure the returnUrl is still valid, and if yes - redirect back to authorize endpoint
@@ -105,9 +98,6 @@ namespace MongoDbIdentityServer.Account
             return this.View(vm);
         }
 
-        /// <summary>
-        /// Show logout page
-        /// </summary>
         [HttpGet]
         public async Task<IActionResult> Logout(string logoutId)
         {
@@ -122,9 +112,6 @@ namespace MongoDbIdentityServer.Account
             return this.View(vm);
         }
 
-        /// <summary>
-        /// Handle logout page postback
-        /// </summary>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Logout(LogoutInputModel model)
@@ -156,9 +143,6 @@ namespace MongoDbIdentityServer.Account
             return this.View("LoggedOut", vm);
         }
 
-        /// <summary>
-        /// initiate roundtrip to external authentication provider
-        /// </summary>
         [HttpGet]
         public async Task<IActionResult> ExternalLogin(string provider, string returnUrl)
         {
@@ -199,9 +183,6 @@ namespace MongoDbIdentityServer.Account
             }
         }
 
-        /// <summary>
-        /// Post processing of external authentication
-        /// </summary>
         [HttpGet]
         public async Task<IActionResult> ExternalLoginCallback()
         {
@@ -235,8 +216,8 @@ namespace MongoDbIdentityServer.Account
             var userId = userIdClaim.Value;
 
             // check if the external user is already provisioned
-            var user = this.users.FindByExternalProvider(provider, userId) ??
-                this.users.AutoProvisionUser(provider, userId, claims);
+            var user = this.userStore.FindByExternalProvider(provider, userId) ??
+                this.userStore.AutoProvisionUser(provider, userId, claims);
 
             var additionalClaims = new List<Claim>();
 
@@ -283,7 +264,6 @@ namespace MongoDbIdentityServer.Account
             return this.Redirect("~/");
         }
 
-
         private async Task<LoggedOutViewModel> BuildLoggedOutViewModelAsync(string logoutId)
         {
             // get context information (client name, post logout redirect URI and iframe for federated signout)
@@ -326,6 +306,5 @@ namespace MongoDbIdentityServer.Account
 
             return vm;
         }
-
     }
 }

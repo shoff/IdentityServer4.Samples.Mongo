@@ -1,7 +1,9 @@
 ﻿namespace MongoDbIdentityServer.Models
 {
     using System.Collections.Generic;
+    using MongoDB.Bson.Serialization.Attributes;
 
+    [BsonIgnoreExtraElements]
     public class User
     {
         /// <summary>

@@ -38,7 +38,6 @@
             this.mongoDatabase = client.GetDatabase(options.Value.DefaultDb);
         }
 
-
         public IQueryable<T> All<T>() where T : class, new()
         {
             return this.mongoDatabase.GetCollection<T>(typeof(T).Name).AsQueryable();
